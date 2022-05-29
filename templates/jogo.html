@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>jogo da velha</title>
+    <style>
+        #jogo{
+            width:603px;
+            height:600px;
+            border:solid 3px
+        }
+        
+        .linha{
+            height:200px;
+            border-bottom:solid 1px;
+        }
+        
+        .casa{
+            width:200px;
+            height:100%;
+            border-right:solid 1px;
+            float:left;
+        }
+        .casa img {
+            max-width:200px;
+            max-height:100%;
+            width: auto;
+            height: auto;
+        }
+        .chat {
+            display: flex;
+            flex-direction: column;
+        }
+        .chat span {
+            margin-bottom: 10px;
+        }
+        form {
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="placar">
+        <h1>Jogador 1: 0 | Jogador 2: 0</h1>
+    </div>
+    <div id="jogo">
+        <div class="linha">
+            <div class="casa" id="casa1" onclick="exec_jogada(1)"></div>
+            <div class="casa" id="casa2" onclick="exec_jogada(2)"></div>
+            <div class="casa" id="casa3" onclick="exec_jogada(3)"></div>
+        </div>
+        <div class="linha">
+            <div class="casa" id="casa4" onclick="exec_jogada(4)"></div>
+            <div class="casa" id="casa5" onclick="exec_jogada(5)"></div>
+            <div class="casa" id="casa6" onclick="exec_jogada(6)"></div>
+        </div>
+        <div class="linha">
+            <div class="casa" id="casa7" onclick="exec_jogada(7)"></div>
+            <div class="casa" id="casa8" onclick="exec_jogada(8)"></div>
+            <div class="casa" id="casa9" onclick="exec_jogada(9)"></div>
+        </div>
+    </div>
+    <div class="chat"></div>
+    <div>
+        <form>
+            <input type="text" placeholder="insira sua mensagem">
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+    <script>
+        
+        const socket = io('/partida');
+        var peca = "";
+        var sala_id = "{{ sala_id }}";
+        var username = "{{ username }}";
+        var jogador1 = "{{ jogador1 }}";
+        var jogador2 = "{{ jogador2 }}";
+        var jogador_atual = "{{ jogador_atual }}";
+        var status_partida = "";
+        var placar = {
+            jogador1: 0,
+            jogador2: 0
+        };
+        
+        if (username == jogador1) {
+            peca = "{{ peca1 }}";
+        }
+        if (username == jogador2) {
+            peca = "{{ peca2 }}";
+        }
+        if(jogador2 != ""){
+            socket.emit('attjogador1', {jogador2: jogador2, sala_id: sala_id});
+        }
+        socket.on("getjogador2", (data) => {
+                jogador2 = data.jogador2;
+            });
+
+        function exec_jogada(id){
+            if(jogador2 != '' && jogador1 != '' && jogador_atual == peca){
+                socket.emit('sendJogada', {jogada: peca, vez: jogador_atual, casa: id, sala_id: sala_id});
+            }else if(jogador2 == ''){
+                alert('AGUARDE O OUTRO JOGADOR');
+            }else{
+                alert('NÃO É SUA VEZ');
+            }
+        }
+
+        function addToChat(msg) {
+                const span = document.createElement("span");
+                const chat = document.querySelector(".chat");
+                span.innerHTML = `<strong>${msg.name}:</strong> ${msg.message}`;
+                chat.append(span);
+            }
+
+        document.querySelector("form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            console.log("entrou");
+            console.log(event.target[0].value);
+            socket.emit('sendMessage', {name: username, message: event.target[0].value, sala_id: sala_id});
+            event.target[0].value = "";
+        })
+
+        socket.on('getMessage', (msg) => {
+                console.log(msg);
+                addToChat(msg)
+            })
+
+        socket.on('message', (msgs) => {
+            for(msg of msgs) {
+                addToChat(msg)
+            }
+        })
+
+        socket.on("joined", (data) => {
+                console.log(data.msg);
+            });
+
+        socket.on("alteraPlacar", (data) => {
+                placar_jogador1 = data.placar_jogador1;
+                placar_jogador2 = data.placar_jogador2;
+                var placar_partida = "Jogador 1: " + placar_jogador1 + " | Jogador 2: " + placar_jogador2;
+                var placar = document.getElementsByClassName("placar")[0];
+                placar.innerHTML = placar_partida;
+            });
+
+        function addJogada(obj) {
+            const image = document.createElement('img');
+            const casa = document.querySelector("#casa"+obj.casa);
+            var icon = obj.jogada+"-icon.png";
+            image.setAttribute(
+            'src',
+            "static/"+icon,
+            );
+            casa.setAttribute("onclick", "");
+            casa.append(image);
+        }
+
+        function reseta() {
+            const casas = document.querySelectorAll(".casa");
+            var i = 0;
+            casas.forEach(casa => {
+                i = i + 1;
+                casa.innerHTML = "";
+                casa.setAttribute("onclick", "exec_jogada("+i+")");
+            });
+        }
+
+        socket.on('connect', () => {
+            console.log(socket.id);
+            socket.emit('join', {sala_id: sala_id, username: username});
+        });
+
+        socket.on('getJogada', (obj) => {
+            console.log(obj);
+            addJogada(obj)
+            
+            
+            if (obj.resultado == 0){
+                alert('EMPATE');
+                reseta()
+                socket.emit('placar', {sala_id: sala_id, placar_jogador2: placar.jogador2, placar_jogador1: placar.jogador1});
+            }
+            else if (obj.resultado == 'x'){
+                if (peca == "x"){
+                    alert('VOCÊ VENCEU');
+                    placar.jogador1 = placar.jogador1 + 1;
+                    reseta()
+                    socket.emit('placar', {sala_id: sala_id, placar_jogador2: placar.jogador2, placar_jogador1: placar.jogador1});
+                }else{
+                    alert('VOCÊ PERDEU');
+                    placar.jogador1 = placar.jogador1 + 1;
+                    reseta()
+                    socket.emit('placar', {sala_id: sala_id, placar_jogador2: placar.jogador2, placar_jogador1: placar.jogador1});
+                }
+            }else if (obj.resultado == 'o'){
+                if (peca == "o"){
+                    alert('VOCÊ VENCEU');
+                    placar.jogador2 = placar.jogador2 + 1;
+                    reseta()
+                    socket.emit('placar', {sala_id: sala_id, placar_jogador2: placar.jogador2, placar_jogador1: placar.jogador1});
+                }else{
+                    alert('VOCÊ PERDEU');
+                    placar.jogador2 = placar.jogador2 + 1;
+                    reseta()
+                    socket.emit('placar', {sala_id: sala_id, placar_jogador2: placar.jogador2, placar_jogador1: placar.jogador1});
+                }
+            }
+            console.log(placar);
+            jogador_atual = obj.vez;
+        })
+
+    </script>
+</body>
+</html>
