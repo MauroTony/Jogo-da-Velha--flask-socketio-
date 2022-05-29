@@ -10,41 +10,36 @@ h2 {
   text-align: center;
 }
 
-p {
-  position: relative;
+#acess-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+  max-width: 100vw;
+  height: 100vh;
 }
 
-a,
-a:link,
-a:visited,
-a:active {
-  color: #3ca9e2;
-  -webkit-transition: all 0.2s ease;
-  transition: all 0.2s ease;
-}
-a:focus, a:hover,
-a:link:focus,
-a:link:hover,
-a:visited:focus,
-a:visited:hover,
-a:active:focus,
-a:active:hover {
-  color: #329dd5;
-  -webkit-transition: all 0.2s ease;
-  transition: all 0.2s ease;
-}
+#acess-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 
-#login-form-wrap {
-  background-color: #fff;
-  width: 35%;
-  margin: 30px auto;
-  text-align: center;
-  padding: 20px 0 0 0;
+  width: 500px;
+  height: 350px;
+
+  padding-bottom: 20px;
+
   border-radius: 4px;
+  background-color: #fff;
   box-shadow: 0px 30px 50px 0px rgba(0, 0, 0, 0.2);
+
 }
 
 #login-form {
+  display:flex;
+  flex-direction: column;
+  gap: 20px;
   padding: 0 60px;
 }
 
@@ -135,13 +130,4 @@ input[type="submit"]:hover {
   background-color: #329dd5;
   -webkit-transition: all 0.2s ease;
   transition: all 0.2s ease;
-}
-
-#rodape {
-  background-color: #eeedf1;
-  color: #8a8b8e;
-  font-size: 14px;
-  width: 100%;
-  padding: 10px 0;
-  border-radius: 0 0 4px 4px;
 }
