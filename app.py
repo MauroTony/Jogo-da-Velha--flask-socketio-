@@ -1,8 +1,7 @@
-
-from unittest import result
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit, send, join_room, leave_room
 from partida import JogoDaVelha
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
