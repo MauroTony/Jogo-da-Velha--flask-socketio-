@@ -62,6 +62,8 @@ def send_jogada_handler(obj):
             print('jogo: ', jogo)
             break
     jogo.qtdjogada = jogo.qtdjogada + 1
+    
+    
     if obj['casa'] == 1:
         jogo.casa1 = obj['jogada']
     elif obj['casa'] == 2:
@@ -80,6 +82,8 @@ def send_jogada_handler(obj):
         jogo.casa8 = obj['jogada']
     elif obj['casa'] == 9:
         jogo.casa9 = obj['jogada']
+    
+    
     resultado = jogo.verificarTabuleiro()
     if resultado == "continua":
         obj["resultado"] = 1

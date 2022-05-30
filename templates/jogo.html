@@ -39,6 +39,7 @@
             id="chat-send-input"
             type="text"
             placeholder="insira sua mensagem"
+            maxlength="100"
           />
           <button id="chat-send-button" type="submit">Enviar</button>
         </form>
@@ -103,8 +104,12 @@
         .querySelector("form")
         .addEventListener("submit", function (event) {
           event.preventDefault();
-          console.log("entrou");
-          console.log(event.target[0].value);
+          if (event.target[0].value == "") {
+            event.target[0].value = "";
+            return;
+          }else if(event.target[0].value.trim().length == 0){
+            return;
+          }
           socket.emit("sendMessage", {
             name: username,
             message: event.target[0].value,
